@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Öğrenci ve Veli Bilgileri</title>
+<!-- jQuery eklentisini indirip projenize dahil edin -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<style type="text/css">
+    
+/* iPhone referanslı CSS */
+.iphone-label {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    color: #333;
+}
+
+.iphone-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-color: transparent;
+    background-color: rgba(10, 0, 240, 0.3);
+    border: 1px solid #ccc;
+    padding: 10px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    color: #333;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    border-radius: 5px;
+}
+
+/* İşaretçi simgesi için stil */
+.iphone-select:after {
+    content: '\25BC'; /* İşaretçi simgesi */
+    position: absolute;
+    top: 50%;
+    right: 10px;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #666;
+}
+
+/* Seçenekler için stiller */
+.iphone-select option {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    color: #333;
+}
+
+
+
+</style>
+</head>
+<body>
+
+
+
+<?php include 'header.php';
+
+
+
+
+?>
+
+
+<?php
+include("../connect.php");
+
+// Öğrenci ID'sini GET parametresinden al
+if(isset($_GET['ogr_id'])) {
+    $ogr_id = $_GET['ogr_id'];
+
+    try {
+        // Öğrenci bilgilerini sorgula
+        $sorgu_ogrenci = $db->prepare("SELECT ogr_ad, ogr_soyad, ogr_tc, veli_id FROM ogrenci WHERE ogr_id = ?");
+        $sorgu_ogrenci->execute([$ogr_id]);
+        $ogrenci = $sorgu_ogrenci->fetch(PDO::FETCH_ASSOC);
+
+        // Öğrenci bilgilerini yazdır
+        if($ogrenci) {
+            // Eğer öğrenciye ait veli bilgisi varsa, veli bilgilerini sorgula ve yazdır
+            if($ogrenci['veli_id']) {
+                $veli_id = $ogrenci['veli_id'];
+                $sorgu_veli = $db->prepare("SELECT veli_ad, veli_soyad, veli_tel, veli_tc, veli_meslek, veli_mail FROM veli WHERE veli_id = ?");
+                $sorgu_veli->execute([$veli_id]);
+                $veli = $sorgu_veli->fetch(PDO::FETCH_ASSOC);
+
+                if($veli) {   /*
+                    echo "<h2>Veli Bilgileri</h2>";
+                    echo "Ad: " . $veli['veli_ad'] . "<br>";
+                    echo "Soyad: " . $veli['veli_soyad'] . "<br>";
+                    echo "Telefon: " . $veli['veli_tel'] . "<br>";
+                    echo "TC Kimlik No: " . $veli['veli_tc'] . "<br>";
+                    echo "Meslek: " . $veli['veli_meslek'] . "<br>";
+                    echo "E-posta: " . $veli['veli_mail'] . "<br>";
+                    */  /* gerekirse kullanırıım */
+                } else {
+                    echo "Veli bilgisi bulunamadı.";
+                }
+            } else {
+                echo "Öğrenciye ait veli bilgisi bulunamadı.";
+            }
+        } else {
+            echo "Öğrenci bulunamadı.";
+        }
+
+        // Öğrenci detaylarını sorgula
+        $sorgu_detay = $db->prepare("SELECT ogr_tel, ogr_adres, ogr_okul, ogr_kan_grubu, ogr_kayit_tar, ogr_dogum_tar, ogr_ucret, ogr_mail, sinif FROM ogrenci_detay WHERE ogr_id = ?");
+        $sorgu_detay->execute([$ogr_id]);
+        $ogrenci_detay = $sorgu_detay->fetch(PDO::FETCH_ASSOC);
+
+        // Öğrenci detaylarını yazdır
+        if($ogrenci_detay) {
+        /*    echo "<h2>Öğrenci Detayları</h2>";
+            echo "Telefon: " . $ogrenci_detay['ogr_tel'] . "<br>";
+            echo "Adres: " . $ogrenci_detay['ogr_adres'] . "<br>";
+            echo "Okul: " . $ogrenci_detay['ogr_okul'] . "<br>";
+            echo "Kan Grubu: " . $ogrenci_detay['ogr_kan_grubu'] . "<br>";
+            echo "Kayıt Tarihi: " . $ogrenci_detay['ogr_kayit_tar'] . "<br>";
+            echo "Doğum Tarihi: " . $ogrenci_detay['ogr_dogum_tar'] . "<br>";
+            echo "Ücret: " . $ogrenci_detay['ogr_ucret'] . "<br>";
+            echo "E-posta: " . $ogrenci_detay['ogr_mail'] . "<br>";
+        
+          */  /* gerekirse kullanırıım */
+        } else {
+            echo "Öğrenci detayları bulunamadı.";
+        }
+    } catch(PDOException $e) {
+        // echo "Hata: " . $e->getMessage();
+    }
+} else {
+    echo "Öğrenci ID bilgisi eksik.";
+}
+?>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h1 class="text-center text-primary">Öğrenci ve Veli Bilgileri Düzenle</h1>
+        </div>
+        <div class="card-body">
+          <form action="" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+            <!-- Eski Alanlar -->
+
+
+                     <!-- baslangıc güncelleme  -->
+              
+
+               <?php  // "dersliksinif" tablosundan verileri çek
+$stmt = $db->prepare("SELECT dersliksinif FROM dersliksinif");
+$stmt->execute();
+$derslik_siniflari = $stmt->fetchAll(PDO::FETCH_ASSOC); ?>
+
+
+   <label for="derslik_sinif" class="iphone-label">Derslik Sınıf (Güncellemek için seçeneklerden seç)</label>
+<select name="sinif" id="derslik_sinif" class="iphone-select">
+    <option value="<?php echo $ogrenci_detay['sinif']; ?>" selected><?php echo $ogrenci_detay['sinif']; ?></option> <!-- İlk değer -->
+    <?php foreach ($derslik_siniflari as $sinif): ?>
+        <option value="<?php echo $sinif['dersliksinif']; ?>"><?php echo $sinif['dersliksinif']; ?></option>
+    <?php endforeach; ?>
+</select>
+
+                     <!-- son güncelleme  -->
+<br><br><br><br>
+
+ <!-- gorsel yukleme bu altı -->
+
+<center> <!-- ortalamak için  -->
+
+              <div class="col-md-6 form-group">
+                
+                <?php   /* şimdi şey yapmam gerek veri tbanından ogr_id ye göre sorgu ve karşılaştırma eğer gorseller tablomda ogr_id ile eşleşen değer varsa gorsel sütünundaki değeri alıcam ve arından img ile birleştirip o görseli çekicem. yoksada boş bir değer atayacam bu sayede her türlü bir görseli ekranda göstericem */
+
+ // Veritabanından gorseli al
+    $query = $db->prepare("SELECT gorsel FROM gorseller WHERE ogr_id = :ogr_id");
+    $query->bindParam(':ogr_id', $ogr_id, PDO::PARAM_INT);
+    $query->execute();
+    $gorsel = $query->fetchColumn();
+
+    if ($gorsel) {
+        // Eğer gorsel varsa ekrana bas
+        echo '<img src="' . $gorsel . '" alt="Öğrenci Görseli">';
+    } else {
+        // Eğer gorsel yoksa varsayılan görseli ekrana bas
+        echo '<img  style="width: 20%; border-radius: 12px;" src="../obs/l/ogrenciimg/kayitsiz.png" alt="Varsayılan Görsel">';
+    }
+
+    ?>
+ 
+              </div>
+              
+         
+
+
+
+
+<div class="col-md-6 form-group">
+      <div class="image-container">
+      <label for="gorsel" class="image-upload">
+        <div class="image-preview">
+          <span id="gorsel-isim">Görsel Yükle</span>
+        </div>
+      </label>
+     <p  style="margin-left: 20px; font-size: 12px">  not: Lütfen Görseli Kare Formatında Atınız* </p>
+  <input type="file" id="gorsel" name="gorsel" required><br><br>
+    </div>
+
+    <style type="text/css">
+         /* gorsel ekleme kısmı için özel tasarım ekledim */
+.image-container {
+  width: 40%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-container input[type="file"] {
+  display: none;
+}
+
+.image-container .image-upload {
+  border: 2px dashed #ccc;
+  padding: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.image-container .image-preview {
+  width: 30%;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+}
+
+.image-container .image-preview span {
+  color: #888;
+  font-size: 14px;
+}
+
+
+
+    </style>
+
+
+
+
+
+
+<script>
+  var gorselInput = document.getElementById("gorsel");
+  var gorselIsimSpan = document.getElementById("gorsel-isim");
+
+  gorselInput.addEventListener("change", function() {
+    //var gorselDosya = gorselInput.files[0];
+    //gorselIsimSpan.textContent = gorselDosya.name;
+    gorselIsimSpan.textContent = "Görsel Seçildi";
+  });
+
+  // bu js kodunda şunu yaptık eğer dedim kullanıcı görsel-isim id li yukarıdaki şeye tıklarsa onun artık yeni ismi görsel yükle değil görsel sçeildi olsun.
+</script>
+
+  </div>
+            
+<br><br><br>
+</center>
+    <!-- üst kısım görsel yükleme işlemi -->
+
+
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Öğrenci Adı</label>
+                <input required type="text" name="ogr_ad" style="background-color: rgba(240, 0, 0, 0.2);"  value="<?php echo $ogrenci['ogr_ad']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Öğrenci Soyadı</label>
+                <input required type="text" name="ogr_soyad" style="background-color: rgba(240, 0, 0, 0.2);"  value="<?php echo $ogrenci['ogr_soyad']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Öğrenci TC Kimlik No</label>
+                <input required type="text" name="ogr_tc"  style="background-color: rgba(0, 240, 0, 0.2);"  value="<?php echo $ogrenci['ogr_tc']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+  
+
+                <!--   <label>SINIFI</label>
+                <input required type="text" style="background-color: rgba(0, 0, 0, 0.2);"  name="sinif" value="<?php echo $ogrenci_detay['sinif']; ?>" class="form-control" > 
+                -->  
+                <label>Veli_ID</label>
+ 
+
+                 <input required type="text"   name="veli_id" value="<?php echo $ogrenci['veli_id']; ?>" class="form-control" readonly >
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Veli Adı</label>
+                <input required type="text" name="veli_ad" value="<?php echo $veli['veli_ad']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Veli Soyadı</label>
+                <input required type="text" name="veli_soyad" value="<?php echo $veli['veli_soyad']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Veli Mail</label>
+                <input required type="text" name="veli_mail" value="<?php echo $veli['veli_mail']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Veli Telefonu</label>
+                <input required type="text" name="veli_tel" value="<?php echo $veli['veli_tel']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Veli TC Kimlik No</label>
+                <input required type="text" name="veli_tc" value="<?php echo $veli['veli_tc']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Veli Meslek</label>
+                <input required type="text" name="veli_meslek" value="<?php echo $veli['veli_meslek']; ?>" class="form-control">
+              </div>
+            </div>
+            <!-- Yeni Eklenen Alanlar -->
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Öğrenci Mail</label>
+                <input required type="text" name="ogr_mail" value="<?php echo $ogrenci_detay['ogr_mail']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Öğrenci Telefonu</label>
+                <input required type="text" name="ogr_tel" value="<?php echo $ogrenci_detay['ogr_tel']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Kan Grubu</label>
+                <input required type="text" name="ogr_kan_grubu" value="<?php echo $ogrenci_detay['ogr_kan_grubu']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Adres</label>
+                <input required type="text" name="ogr_adres" value="<?php echo $ogrenci_detay['ogr_adres']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Okul</label>
+                <input required type="text" name="ogr_okul" value="<?php echo $ogrenci_detay['ogr_okul']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Kayıt Tarihi</label>
+                <input required type="text" name="ogr_kayit_tar" value="<?php echo $ogrenci_detay['ogr_kayit_tar']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Doğum Tarihi</label>
+                <input required type="text" name="ogr_dogum_tar" value="<?php echo $ogrenci_detay['ogr_dogum_tar']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Ücret</label>
+                <input required type="text" name="ogr_ucret" value="<?php echo $ogrenci_detay['ogr_ucret']; ?>" class="form-control">
+              </div>
+            </div>
+            <!-- Yeni Eklenen Alanlar Sonu -->
+            <div class="text-center mt-4">
+              <button type="submit" name="edit_ogrenci_btn" class="btn btn-primary col-md-6">Düzenle</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<?php
+
+
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Öğrenci ve veli bilgilerini güncelle
+        $ogr_ad = $_POST['ogr_ad'];
+        $ogr_soyad = $_POST['ogr_soyad'];
+        $ogr_tc = $_POST['ogr_tc'];
+        $veli_id = $_POST['veli_id'];
+        $sinif = $_POST['sinif'];
+        $veli_ad = $_POST['veli_ad'];
+        $veli_soyad = $_POST['veli_soyad'];
+        $veli_mail = $_POST['veli_mail'];
+        $veli_tel = $_POST['veli_tel'];
+        $veli_tc = $_POST['veli_tc'];
+        $veli_meslek = $_POST['veli_meslek'];
+        $ogr_mail = $_POST['ogr_mail'];
+        $ogr_tel = $_POST['ogr_tel'];
+        $ogr_kan_grubu = $_POST['ogr_kan_grubu'];
+        $ogr_adres = $_POST['ogr_adres'];
+        $ogr_okul = $_POST['ogr_okul'];
+        $ogr_kayit_tar = $_POST['ogr_kayit_tar'];
+        $ogr_dogum_tar = $_POST['ogr_dogum_tar'];
+        $ogr_ucret = $_POST['ogr_ucret'];
+
+        try {
+            // Öğrenci tablosunu güncelle
+            $sorgu_ogrenci_update = $db->prepare("UPDATE ogrenci SET ogr_ad = ?, ogr_soyad = ?, ogr_tc = ?, veli_id = ? WHERE ogr_id = ?");
+            $sorgu_ogrenci_update->execute([$ogr_ad, $ogr_soyad, $ogr_tc, $veli_id, $ogr_id]);
+
+            // Veli tablosunu güncelle
+            $sorgu_veli_update = $db->prepare("UPDATE veli SET veli_ad = ?, veli_soyad = ?, veli_mail = ?, veli_tel = ?, veli_tc = ?, veli_meslek = ? WHERE veli_id = ?");
+            $sorgu_veli_update->execute([$veli_ad, $veli_soyad, $veli_mail, $veli_tel, $veli_tc, $veli_meslek, $veli_id]);
+
+            // Öğrenci detay tablosunu güncelle
+            $sorgu_detay_update = $db->prepare("UPDATE ogrenci_detay SET ogr_mail = ?, ogr_tel = ?, ogr_kan_grubu = ?, ogr_adres = ?, ogr_okul = ?, ogr_kayit_tar = ?, ogr_dogum_tar = ?, ogr_ucret = ?,  sinif = ? WHERE ogr_id = ?");
+            $sorgu_detay_update->execute([$ogr_mail, $ogr_tel, $ogr_kan_grubu, $ogr_adres, $ogr_okul, $ogr_kayit_tar, $ogr_dogum_tar, $ogr_ucret, $sinif, $ogr_id]);
+
+            echo "Öğrenci ve veli bilgileri başarıyla güncellendi.";
+
+        } catch(PDOException $e) {
+            //echo "Hata: " . $e->getMessage();
+        }
+    }
+
+ else {
+    echo "Güncellenemedi";
+}
+?>
+
+
+          <?php include 'footer.php'; ?>
+
+
+
+
+
+<!-- Loading Gif -->
+<div id="loading" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <img src="https://media.tenor.com/P_ZKppej79cAAAAi/gif.gif" alt="Yükleniyor...">
+</div>
+<script>
+$(document).ready(function(){
+    // Form submit olduğunda
+    $("form").submit(function(e){
+        e.preventDefault(); // Formun varsayılan submit işlemini durdur
+
+        // loading.gif'i göster
+        $("#loading").show();
+
+        // 3 saniye sonra loading.gif'i gizle ve formu göster
+        setTimeout(function(){
+            $("#loading").hide();
+            $("form").unbind('submit').submit(); // Formu tekrar submit et
+        }, 3000);
+    });
+});
+</script>
+
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğrenci Ders Ekleme</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        select {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            display: block;
+            width: calc(100% - 20px);
+            margin-bottom: 5px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: block;
+            margin: 0 auto;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .error {
+            color: red;
+        }
+
+        .selected {
+           /* background-color: #a6e7a6;  Yeşil renk */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <table>
+            <tr>
+                <th>Sıra No</th>
+                <th>Öğrenci Bilgileri</th>
+                <th>Veli Bilgileri</th>
+                <th>Form</th>
+            </tr>
+            <?php
+            include("../connect.php");
+
+            $okul = $_GET['okul'];
+            $counter = 0;
+
+            try {
+                $sorgu = $db->prepare("SELECT ogrenci.ogr_id, ogrenci.ogr_ad, ogrenci.ogr_soyad, ogrenci.ogr_tc FROM ogrenci INNER JOIN ogrenci_detay ON ogrenci.ogr_id = ogrenci_detay.ogr_id WHERE ogrenci_detay.ogr_okul = ?");
+                $sorgu->execute([$okul]);
+                $ogrenciler = $sorgu->fetchAll(PDO::FETCH_ASSOC);
+
+                if ($ogrenciler) {
+                    foreach ($ogrenciler as $ogrenci) {
+                        $counter++;
+                        echo "<tr>";
+                        echo "<td>" . $counter .  "</td>";
+                        echo "<td>".$ogrenci['ogr_ad']." ".$ogrenci['ogr_soyad']." <br> ".$ogrenci['ogr_tc']."</td>";
+
+                        $veli_id = $ogrenci['ogr_id'];
+                        $veli_sorgu = $db->prepare("SELECT ogr_okul, ogr_adres FROM ogrenci_detay WHERE ogr_id = ?");
+                        $veli_sorgu->execute([$veli_id]);
+                        $veli = $veli_sorgu->fetch(PDO::FETCH_ASSOC);
+
+                        if ($veli) {
+                            echo "<td>".$veli['ogr_adres']." - <br> ".$veli['ogr_okul']."</td>";
+                        } else {
+                            echo "<td colspan='6'>Okul ve Adres bilgisi bulunamadı.</td>";
+                        }
+
+                        echo "<td>";
+                        echo "<form method='post' action='kaydet.php'>";
+                        echo "<input type='text' name='ogr_id'  style='display: none;'  value='".$ogrenci['ogr_id']."' required><br><br>";
+
+                        // Öğrenci derslerini kontrol et
+                        $dersler_sorgu = $db->prepare("SELECT * FROM ogrencidersleri WHERE ogr_id = ?");
+                        $dersler_sorgu->execute([$veli_id]);
+                        $dersler = $dersler_sorgu->fetch(PDO::FETCH_ASSOC);
+
+                        for ($i = 1; $i <= 8; $i++) {
+                            echo "<select name='selectedClasses[".$i."]' onclick='openSelectOptions(this)'>";
+                            echo "<option value=''>Ders Ekle</option>";
+
+                            // Ders seçeneklerini oluştur
+                            $sinif_sorgu = $db->prepare("SELECT DISTINCT sinif FROM siniflar");
+                            $sinif_sorgu->execute();
+                            $siniflar = $sinif_sorgu->fetchAll(PDO::FETCH_COLUMN);
+
+                            foreach ($siniflar as $sinif) {
+                                // Eğer ders seçiliyse, onu seçili yap
+                                if ($dersler && isset($dersler["ders$i"]) && $dersler["ders$i"] == $sinif) {
+                                    echo "<option value='".$sinif."' selected>".$sinif."</option>";
+                                } else {
+                                    echo "<option value='".$sinif."'>".$sinif."</option>";
+                                }
+                            }
+                            echo "</select>";
+                        }
+
+                        echo "<button type='submit' name='submit'>Onayla</button>";
+                        echo "</form>";
+                        echo "</td>";
+
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='4'>Seçilen okula ait öğrenci bulunamadı.</td></tr>";
+                }
+            } catch(PDOException $e) {
+                echo "<tr><td colspan='4' class='error'>Hata: " . $e->getMessage() . "</td></tr>";
+            }
+            ?>
+        </table>
+    </div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Öğrenci ve Veli Bilgileri</title>
+<!-- jQuery eklentisini indirip projenize dahil edin -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+
+
+<?php include 'header.php';
+
+
+
+
+?>
+
+
+<?php
+include("../connect.php");
+
+// Öğrenci ID'sini GET parametresinden al
+if(isset($_GET['ogr_id'])) {
+    $ogr_id = $_GET['ogr_id'];
+
+    try {
+        // Öğrenci bilgilerini sorgula
+        $sorgu_ogrenci = $db->prepare("SELECT ogr_ad, ogr_soyad, ogr_tc, veli_id FROM ogrenci WHERE ogr_id = ?");
+        $sorgu_ogrenci->execute([$ogr_id]);
+        $ogrenci = $sorgu_ogrenci->fetch(PDO::FETCH_ASSOC);
+
+        // Öğrenci bilgilerini yazdır
+        if($ogrenci) {
+            // Eğer öğrenciye ait veli bilgisi varsa, veli bilgilerini sorgula ve yazdır
+            if($ogrenci['veli_id']) {
+                $veli_id = $ogrenci['veli_id'];
+                $sorgu_veli = $db->prepare("SELECT veli_ad, veli_soyad, veli_tel, veli_tc, veli_meslek, veli_mail FROM veli WHERE veli_id = ?");
+                $sorgu_veli->execute([$veli_id]);
+                $veli = $sorgu_veli->fetch(PDO::FETCH_ASSOC);
+
+                if($veli) {   /*
+                    echo "<h2>Veli Bilgileri</h2>";
+                    echo "Ad: " . $veli['veli_ad'] . "<br>";
+                    echo "Soyad: " . $veli['veli_soyad'] . "<br>";
+                    echo "Telefon: " . $veli['veli_tel'] . "<br>";
+                    echo "TC Kimlik No: " . $veli['veli_tc'] . "<br>";
+                    echo "Meslek: " . $veli['veli_meslek'] . "<br>";
+                    echo "E-posta: " . $veli['veli_mail'] . "<br>";
+                    */  /* gerekirse kullanırıım */
+                } else {
+                    echo "Veli bilgisi bulunamadı.";
+                }
+            } else {
+                echo "Öğrenciye ait veli bilgisi bulunamadı.";
+            }
+        } else {
+            echo "Öğrenci bulunamadı.";
+        }
+
+        // Öğrenci detaylarını sorgula
+        $sorgu_detay = $db->prepare("SELECT ogr_tel, ogr_adres, ogr_okul, ogr_kan_grubu, ogr_kayit_tar, ogr_dogum_tar, ogr_ucret, ogr_mail FROM ogrenci_detay WHERE ogr_id = ?");
+        $sorgu_detay->execute([$ogr_id]);
+        $ogrenci_detay = $sorgu_detay->fetch(PDO::FETCH_ASSOC);
+
+        // Öğrenci detaylarını yazdır
+        if($ogrenci_detay) {
+        /*    echo "<h2>Öğrenci Detayları</h2>";
+            echo "Telefon: " . $ogrenci_detay['ogr_tel'] . "<br>";
+            echo "Adres: " . $ogrenci_detay['ogr_adres'] . "<br>";
+            echo "Okul: " . $ogrenci_detay['ogr_okul'] . "<br>";
+            echo "Kan Grubu: " . $ogrenci_detay['ogr_kan_grubu'] . "<br>";
+            echo "Kayıt Tarihi: " . $ogrenci_detay['ogr_kayit_tar'] . "<br>";
+            echo "Doğum Tarihi: " . $ogrenci_detay['ogr_dogum_tar'] . "<br>";
+            echo "Ücret: " . $ogrenci_detay['ogr_ucret'] . "<br>";
+            echo "E-posta: " . $ogrenci_detay['ogr_mail'] . "<br>";
+        
+          */  /* gerekirse kullanırıım */
+        } else {
+            echo "Öğrenci detayları bulunamadı.";
+        }
+    } catch(PDOException $e) {
+        // echo "Hata: " . $e->getMessage();
+    }
+} else {
+    echo "Öğrenci ID bilgisi eksik.";
+}
+?>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h1 class="text-center text-primary">Öğrenci ve Veli Bilgileri Düzenle</h1>
+        </div>
+        <div class="card-body">
+          <form action="" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+            <!-- Eski Alanlar -->
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Öğrenci Adı</label>
+                <input required type="text" name="ogr_ad" value="<?php echo $ogrenci['ogr_ad']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Öğrenci Soyadı</label>
+                <input required type="text" name="ogr_soyad" value="<?php echo $ogrenci['ogr_soyad']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Öğrenci TC Kimlik No</label>
+                <input required type="text" name="ogr_tc" value="<?php echo $ogrenci['ogr_tc']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Veli ID</label>
+                <input required type="text" name="veli_id" value="<?php echo $ogrenci['veli_id']; ?>" class="form-control" readonly>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Veli Adı</label>
+                <input required type="text" name="veli_ad" value="<?php echo $veli['veli_ad']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Veli Soyadı</label>
+                <input required type="text" name="veli_soyad" value="<?php echo $veli['veli_soyad']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Veli Mail</label>
+                <input required type="text" name="veli_mail" value="<?php echo $veli['veli_mail']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Veli Telefonu</label>
+                <input required type="text" name="veli_tel" value="<?php echo $veli['veli_tel']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Veli TC Kimlik No</label>
+                <input required type="text" name="veli_tc" value="<?php echo $veli['veli_tc']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Veli Meslek</label>
+                <input required type="text" name="veli_meslek" value="<?php echo $veli['veli_meslek']; ?>" class="form-control">
+              </div>
+            </div>
+            <!-- Yeni Eklenen Alanlar -->
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Öğrenci Mail</label>
+                <input required type="text" name="ogr_mail" value="<?php echo $ogrenci_detay['ogr_mail']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Öğrenci Telefonu</label>
+                <input required type="text" name="ogr_tel" value="<?php echo $ogrenci_detay['ogr_tel']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Kan Grubu</label>
+                <input required type="text" name="ogr_kan_grubu" value="<?php echo $ogrenci_detay['ogr_kan_grubu']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Adres</label>
+                <input required type="text" name="ogr_adres" value="<?php echo $ogrenci_detay['ogr_adres']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Okul</label>
+                <input required type="text" name="ogr_okul" value="<?php echo $ogrenci_detay['ogr_okul']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Kayıt Tarihi</label>
+                <input required type="text" name="ogr_kayit_tar" value="<?php echo $ogrenci_detay['ogr_kayit_tar']; ?>" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-6 form-group">
+                <label>Doğum Tarihi</label>
+                <input required type="text" name="ogr_dogum_tar" value="<?php echo $ogrenci_detay['ogr_dogum_tar']; ?>" class="form-control">
+              </div>
+              <div class="col-md-6 form-group">
+                <label>Ücret</label>
+                <input required type="text" name="ogr_ucret" value="<?php echo $ogrenci_detay['ogr_ucret']; ?>" class="form-control">
+              </div>
+            </div>
+            <!-- Yeni Eklenen Alanlar Sonu -->
+            <div class="text-center mt-4">
+              <button type="submit" name="edit_ogrenci_btn" class="btn btn-primary col-md-6">Düzenle</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<?php
+
+
+
+    if ($_SERVER["REQUEST_METHOD"] == "POST") {
+        // Öğrenci ve veli bilgilerini güncelle
+        $ogr_ad = $_POST['ogr_ad'];
+        $ogr_soyad = $_POST['ogr_soyad'];
+        $ogr_tc = $_POST['ogr_tc'];
+        $veli_id = $_POST['veli_id'];
+        $veli_ad = $_POST['veli_ad'];
+        $veli_soyad = $_POST['veli_soyad'];
+        $veli_mail = $_POST['veli_mail'];
+        $veli_tel = $_POST['veli_tel'];
+        $veli_tc = $_POST['veli_tc'];
+        $veli_meslek = $_POST['veli_meslek'];
+        $ogr_mail = $_POST['ogr_mail'];
+        $ogr_tel = $_POST['ogr_tel'];
+        $ogr_kan_grubu = $_POST['ogr_kan_grubu'];
+        $ogr_adres = $_POST['ogr_adres'];
+        $ogr_okul = $_POST['ogr_okul'];
+        $ogr_kayit_tar = $_POST['ogr_kayit_tar'];
+        $ogr_dogum_tar = $_POST['ogr_dogum_tar'];
+        $ogr_ucret = $_POST['ogr_ucret'];
+
+        try {
+            // Öğrenci tablosunu güncelle
+            $sorgu_ogrenci_update = $db->prepare("UPDATE ogrenci SET ogr_ad = ?, ogr_soyad = ?, ogr_tc = ?, veli_id = ? WHERE ogr_id = ?");
+            $sorgu_ogrenci_update->execute([$ogr_ad, $ogr_soyad, $ogr_tc, $veli_id, $ogr_id]);
+
+            // Veli tablosunu güncelle
+            $sorgu_veli_update = $db->prepare("UPDATE veli SET veli_ad = ?, veli_soyad = ?, veli_mail = ?, veli_tel = ?, veli_tc = ?, veli_meslek = ? WHERE veli_id = ?");
+            $sorgu_veli_update->execute([$veli_ad, $veli_soyad, $veli_mail, $veli_tel, $veli_tc, $veli_meslek, $veli_id]);
+
+            // Öğrenci detay tablosunu güncelle
+            $sorgu_detay_update = $db->prepare("UPDATE ogrenci_detay SET ogr_mail = ?, ogr_tel = ?, ogr_kan_grubu = ?, ogr_adres = ?, ogr_okul = ?, ogr_kayit_tar = ?, ogr_dogum_tar = ?, ogr_ucret = ? WHERE ogr_id = ?");
+            $sorgu_detay_update->execute([$ogr_mail, $ogr_tel, $ogr_kan_grubu, $ogr_adres, $ogr_okul, $ogr_kayit_tar, $ogr_dogum_tar, $ogr_ucret, $ogr_id]);
+
+            echo "Öğrenci ve veli bilgileri başarıyla güncellendi.";
+
+        } catch(PDOException $e) {
+            //echo "Hata: " . $e->getMessage();
+        }
+    }
+
+ else {
+    echo "Güncellenemedi";
+}
+?>
+
+
+          <?php include 'footer.php'; ?>
+
+
+
+
+
+<!-- Loading Gif -->
+<div id="loading" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+    <img src="https://media.tenor.com/P_ZKppej79cAAAAi/gif.gif" alt="Yükleniyor...">
+</div>
+<script>
+$(document).ready(function(){
+    // Form submit olduğunda
+    $("form").submit(function(e){
+        e.preventDefault(); // Formun varsayılan submit işlemini durdur
+
+        // loading.gif'i göster
+        $("#loading").show();
+
+        // 3 saniye sonra loading.gif'i gizle ve formu göster
+        setTimeout(function(){
+            $("#loading").hide();
+            $("form").unbind('submit').submit(); // Formu tekrar submit et
+        }, 3000);
+    });
+});
+</script>
+
+
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?php
+include("../connect.php");
+
+// Okul adını al
+$okul = $_GET['okul'];
+
+$counter = 0; // Sıra numarası için sayaç
+
+try {
+    // Öğrenci bilgilerini sorgula
+    $sorgu = $db->prepare("SELECT ogrenci.ogr_id, ogrenci.ogr_ad, ogrenci.ogr_soyad, ogrenci.ogr_tc FROM ogrenci INNER JOIN ogrenci_detay ON ogrenci.ogr_id = ogrenci_detay.ogr_id WHERE ogrenci_detay.ogr_okul = ?");
+    $sorgu->execute([$okul]);
+    $ogrenciler = $sorgu->fetchAll(PDO::FETCH_ASSOC);
+
+    // Sonuçları listele
+    if ($ogrenciler) {
+        foreach ($ogrenciler as $ogrenci) {
+            $counter++; // Sayaçı arttır
+            echo "<tr class='ara'>";
+            echo "<td>" . $counter .  "</td>";
+            
+            echo "<td class='ara2'>".$ogrenci['ogr_ad']." ".$ogrenci['ogr_soyad']." <br> ".$ogrenci['ogr_tc']."</td>";
+
+            // İlgili veli bilgilerini sorgula
+            $veli_id = $ogrenci['ogr_id'];
+            $veli_sorgu = $db->prepare("SELECT ogr_okul, ogr_adres FROM ogrenci_detay WHERE ogr_id = ?");
+            
+            $veli_sorgu->execute([$veli_id]);
+            $veli = $veli_sorgu->fetch(PDO::FETCH_ASSOC);
+
+            // Eğer veli bulunduysa, bilgileri listele
+            if ($veli) {
+                echo "<td class='ara2'>".$veli['ogr_adres']." - <br> ".$veli['ogr_okul']."</td>";
+            } else {
+                echo "<td colspan='6'>Okul ve Adres bilgisi bulunamadı.</td>";
+            }
+
+            // Formu ekle
+            echo "<td>";
+            echo "<form method='post' action='kaydet.php'>";
+            echo "<input type='text' name='ogr_id' value='".$ogrenci['ogr_id']."' required><br><br>";
+
+            for ($i = 1; $i <= 8; $i++) {
+                echo "<select name='selectedClasses[".$i."]' onclick='openSelectOptions(this)'>";
+                echo "<option value=''>Seçiniz</option>"; // Boş seçenek
+
+                // Sınıfları veritabanından al ve liste oluştur
+                $sinif_sorgu = $db->prepare("SELECT DISTINCT sinif FROM siniflar");
+                $sinif_sorgu->execute();
+                $siniflar = $sinif_sorgu->fetchAll(PDO::FETCH_COLUMN);
+
+                foreach ($siniflar as $sinif) {
+                    echo "<option value='".$sinif."'>".$sinif."</option>";
+                }
+                echo "</select>";
+            }
+
+            echo "<button type='submit' name='submit'>Onayla</button>";
+            echo "</form>";
+            echo "</td>";
+
+            echo "</tr>";
+        }
+    } else {
+        echo "<tr><td colspan='9'>Seçilen okula ait öğrenci bulunamadı.</td></tr>";
+    }
+} catch(PDOException $e) {
+    echo "<tr><td colspan='9'>Hata: " . $e->getMessage() . "</td></tr>";
+}
+?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<?php
+include("../connect.php");
+
+// Okul adını al
+$okul = $_GET['okul'];
+
+$counter = 0; // Sıra numarası için sayaç
+
+try {
+    // Öğrenci bilgilerini sorgula
+    $sorgu = $db->prepare("SELECT ogrenci.ogr_id, ogrenci.ogr_ad, ogrenci.ogr_soyad, ogrenci.ogr_tc FROM ogrenci INNER JOIN ogrenci_detay ON ogrenci.ogr_id = ogrenci_detay.ogr_id WHERE ogrenci_detay.ogr_okul = ?");
+    $sorgu->execute([$okul]);
+    $ogrenciler = $sorgu->fetchAll(PDO::FETCH_ASSOC);
+
+    // Sonuçları listele
+    if ($ogrenciler) {
+        foreach ($ogrenciler as $ogrenci) {
+            $counter++; // Sayaçı arttır
+            echo "<tr class='ara'>";
+            echo "<td>" . $counter .  "</td>";
+            
+            echo "<td class='ara2'>".$ogrenci['ogr_ad']." ".$ogrenci['ogr_soyad']." <br> ".$ogrenci['ogr_tc']."</td>";
+
+            // İlgili veli bilgilerini sorgula
+            $veli_id = $ogrenci['ogr_id'];
+            $veli_sorgu = $db->prepare("SELECT ogr_okul, ogr_adres FROM ogrenci_detay WHERE ogr_id = ?");
+            
+            $veli_sorgu->execute([$veli_id]);
+            $veli = $veli_sorgu->fetch(PDO::FETCH_ASSOC);
+
+            // Eğer veli bulunduysa, bilgileri listele
+            if ($veli) {
+                echo "<td class='ara2'>".$veli['ogr_adres']." - <br> ".$veli['ogr_okul']."</td>";
+            } else {
+                echo "<td colspan='6'>Okul ve Adres bilgisi bulunamadı.</td>";
+            }
+
+            // Formu ekle
+            echo "<td>";
+            echo "<form method='post' action='kaydet.php'>";
+            echo "<input type='text' name='ogr_id' value='".$ogrenci['ogr_id']."' required><br><br>";
+
+            for ($i = 1; $i <= 8; $i++) {
+                echo "<select name='selectedClasses[".$i."]' onclick='openSelectOptions(this)'>";
+                echo "<option value=''>Seçiniz</option>"; // Boş seçenek
+
+                // Sınıfları veritabanından al ve liste oluştur
+                $sinif_sorgu = $db->prepare("SELECT DISTINCT sinif FROM siniflar");
+                $sinif_sorgu->execute();
+                $siniflar = $sinif_sorgu->fetchAll(PDO::FETCH_COLUMN);
+
+                foreach ($siniflar as $sinif) {
+                    echo "<option value='".$sinif."'>".$sinif."</option>";
+                }
+                echo "</select>";
+            }
+
+            echo "<button type='submit' name='submit'>Onayla</button>";
+            echo "</form>";
+            echo "</td>";
+
+            echo "</tr>";
+        }
+    } else {
+        echo "<tr><td colspan='9'>Seçilen okula ait öğrenci bulunamadı.</td></tr>";
+    }
+} catch(PDOException $e) {
+    echo "<tr><td colspan='9'>Hata: " . $e->getMessage() . "</td></tr>";
+}
+?>
+
+
+
+
+
+
+
+
+
+
+<div class="card">
+    <h2>LÜTFEN OKUL SEÇİNİZ</h2>
+    <select id="okulSecimi" onchange="okulSecildi(this.value)">
+        <option value="">Okul Seçiniz</option>
+        <?php
+        include("../connect.php");
+
+        // Okulları sorgula
+        $sorgu = $db->prepare("SELECT DISTINCT ogr_okul FROM ogrenci_detay");
+        $sorgu->execute();
+        $okullar = $sorgu->fetchAll(PDO::FETCH_COLUMN);
+
+        // Okulları listele
+        foreach ($okullar as $okul) {
+            echo "<option value='".$okul."'>".$okul."</option>";
+        }
+        ?>
+    </select>
+    <table id="ogrenciTablosu">
+        <!-- Öğrenci tablosu burada olacak, başlangıçta boş olacak -->
+    </table>
+</div>
+
+<script>
+    function okulSecildi(okul) {
+        if (okul) {
+            // Okula göre öğrencileri getir
+            fetch('getogrenciler.php?okul=' + okul)
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('ogrenciTablosu').innerHTML = data;
+            });
+        } else {
+            document.getElementById('ogrenciTablosu').innerHTML = "";
+        }
+    }
+</script>
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğrenci Bilgileri</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap"
+    rel="stylesheet">
+    <style>
+        /* Temel stillendirme */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        /* Tablo stilleri */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        /* Düzenleme butonu stilleri */
+        .edit-button {
+            background-color: #4CAF50; /* Yeşil */
+            border: none;
+            color: white;
+            padding: 8px 16px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            margin: 4px 2px;
+            transition-duration: 0.4s;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .edit-button:hover {
+            background-color: #45a049; /* Koyu yeşil */
+        }
+
+        /* Animasyonlar */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Gölgelendirme */
+        .card {
+            background-color: #fff;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            transition: 0.3s;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease;
+        }
+
+
+
+        /* arama butonu için */
+
+        .header-search-container { position: relative; }
+
+    .header-search-container .search-field {
+        font-size: var(--fs-7);
+        color: var(--onyx);
+        padding: 10px 15px;
+        padding-right: 50px;
+        border: 1px solid var(--cultured);
+        -webkit-border-radius: var(--border-radius-md);
+            border-radius: var(--border-radius-md);
+      } 
+
+    .search-field::-webkit-search-cancel-button { display: none; }
+  
+    .search-btn {
+     background: var(--white);
+       position: absolute;
+     top: 50%;
+     right: 2px;
+     -webkit-transform: translateY(-50%);
+         -ms-transform: translateY(-50%);
+            transform: translateY(-50%);
+         color: var(--onyx);
+     font-size: 18px;
+     padding: 8px 15px;
+      -webkit-border-radius: var(--border-radius-md);
+          border-radius: var(--border-radius-md);
+        -webkit-transition: color var(--transition-timing);
+        -o-transition: color var(--transition-timing);
+        transition: color var(--transition-timing);
+}
+
+.search-btn:hover { color: var(--salmon-pink); }
+  .header-search-container { min-width: 300px; }
+
+     .header-main .container { gap: 80px; }
+
+  .header-search-container { -webkit-box-flex: 1; -webkit-flex-grow: 1; -ms-flex-positive: 1; flex-grow: 1; }
+
+          input {
+  display: block;
+  width: 100%;
+  font: inherit;
+}
+
+input::-webkit-input-placeholder { font: inherit; }
+
+input::-moz-placeholder { font: inherit; }
+
+input:-ms-input-placeholder { font: inherit; }
+
+input::-ms-input-placeholder { font: inherit; }
+
+input::placeholder { font: inherit; }
+  button {
+  background: none;
+  font: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+img, ion-icon, button, a { display: block; }
+    </style>
+</head>
+<body>
+
+
+
+<?php include 'header.php';
+
+
+
+
+?>
+
+
+
+
+
+<!-- Arama işlevi için JavaScript -->
+<script type="text/javascript">
+  function searchForElement() {
+    var input, filter, tr, td, i, txtValue;
+    input = document.getElementById("searchInput");
+    filter = input.value.toUpperCase();
+    tr = document.getElementsByClassName("ara");
+
+    for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByClassName("ara2");
+      matchFound = false;
+      for (var j = 0; j < td.length; j++) {
+        txtValue = td[j].textContent || td[j].innerText;
+        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+          matchFound = true;
+          break; // Eğer eşleşme bulunduysa döngüden çık
+        }
+      }
+      if (matchFound) {
+        tr[i].style.display = "";
+        tr[i].style.transform = "translateY(0)"; // Reset transform to initial position
+      } else {
+        tr[i].style.display = "none";
+      }
+    }
+  }
+</script>
+
+
+
+<div class="header-search-container">
+
+         <input type="text" id="searchInput" onkeyup="searchForElement()" class="search-field" placeholder="Bir şeyler yazınız...">
+
+          <button class="search-btn">
+            <ion-icon name="search-outline"></ion-icon>
+          </button>
+
+        </div>
+
+<div class="card">
+    <h2>Ders Giriş</h2>
+    <table>
+        <tr><th>Kişi</th>
+            
+            
+            <th>İsim - TC Kimlik No</th>
+            <th>Adres - Okul</th>
+            
+            <th>Ders 1</th>
+           <th>Ders 2</th>
+            <th>Ders 3</th>
+            <th>Ders 4</th>
+            <th>Ders 5</th>
+            <th>Ders 6</th>
+           <th>Ders 7</th>
+           <th>Ders 8</th>
+            
+        </tr>
+        <?php
+        include("../connect.php");
+
+        $counter = 0; // Sıra numarası için sayaç
+
+        try {
+            // Öğrenci bilgilerini sorgula
+            $sorgu = $db->prepare("SELECT ogr_id, ogr_ad, ogr_soyad, veli_id, ogr_tc FROM ogrenci");
+            $sorgu->execute();
+            $ogrenciler = $sorgu->fetchAll(PDO::FETCH_ASSOC);
+
+            // Sonuçları listele
+            if ($ogrenciler) {
+                
+                foreach ($ogrenciler as $ogrenci) {
+                    $counter++; // Sayaçı arttır
+                    echo "<tr class='ara'>";
+                    echo "<td>" . $counter .  "</td>";
+                 
+                    
+                   
+                    echo "<td class='ara2'>".$ogrenci['ogr_ad']." ".$ogrenci['ogr_soyad']." <br> ".$ogrenci['ogr_tc']."</td>";
+
+                    // İlgili veli bilgilerini sorgula
+                    $veli_id = $ogrenci['ogr_id'];
+                    $veli_sorgu = $db->prepare("SELECT ogr_okul, ogr_adres FROM ogrenci_detay WHERE ogr_id = ?");
+                    
+                  
+                    $veli_sorgu->execute([$veli_id]);
+                    $veli = $veli_sorgu->fetch(PDO::FETCH_ASSOC);
+
+                    // Eğer veli bulunduysa, bilgileri listele
+                    if ($veli) {
+                        echo "<td class='ara2'>".$veli['ogr_adres']." - <br> ".$veli['ogr_okul']."</td>";
+                       
+                       
+                    } else {
+                        echo "<td colspan='6'>Okul ve Adres bilgisi bulunamadı.</td>";
+                    }
+                 // Sınıfların listelenmesi
+for ($i = 1; $i <= 8; $i++) {
+    echo "<td><select class='edit-button' name='selectedClasses[".$ogrenci['ogr_id']."][".$i."]' onclick='openSelectOptions(this)'>";
+    echo "<option value=''>Seçiniz</option>"; // Boş seçenek
+    // Sınıfları veritabanından al ve liste oluştur
+    $sinif_sorgu = $db->prepare("SELECT DISTINCT sinif FROM siniflar");
+    $sinif_sorgu->execute();
+    $siniflar = $sinif_sorgu->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach ($siniflar as $sinif) {
+        echo "<option value='".$sinif."'>".$sinif."</option>";
+    }
+    echo "</select></td>";
+}
+
+            echo "</tr>";
+        }
+            } else {
+                echo "<tr><td colspan='8'>Hiç öğrenci bulunamadı.</td></tr>";
+            }
+        } catch(PDOException $e) {
+            echo "<tr><td colspan='8'>Hata: " . $e->getMessage() . "</td></tr>";
+        }
+        ?>
+    </table>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+          <?php include 'footer.php'; ?>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+---------------<?php include 'header.php';
+
+$veli_sorgu = "SELECT * FROM veli";
+$veli_result = mysqli_query($connection, $veli_sorgu);
+?>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header">
+          <h1 class="text-center text-primary">Öğrenci Ekle</h1>
+        </div>
+        <div class="card-body">
+          <form action="../process.php" method="post" accept-charset="utf-8" enctype="multipart/form-data">
+          <div class="form-row">
+  <div class="col-md-12 form-group">
+    <label>Veli Seçiniz</label>
+    <select required name="veli_id" class="form-control">
+      <?php while ($row = mysqli_fetch_assoc($veli_result)) { ?>
+        <option value="<?php echo $row['veli_id']; ?>"><?php echo $row['veli_ad'] . ' ' . $row['veli_soyad']; ?></option>
+      <?php } ?>
+    </select>
+  </div>
+</div>
+            <div class="form-row">
+              <div class="col-md-12 form-group">
+                <label>Öğrenci TCNO</label>
+                <input required type="text" name="ogr_tc" value="" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 form-group">
+                <label>Öğrenci Adı</label>
+                <input required type="text" name="ogr_ad" value="" class="form-control">
+              </div>
+            </div>
+            
+            
+            <div class="form-row">
+              <div class="col-md-12 form-group">
+                <label> Öğrenci Telefonu</label>
+                <input required type="text" name="ogr_tel" value="" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 form-group">
+                <label> Adres</label>
+                <input required type="text" name="ogr_adres" value="" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="col-md-12 form-group">
+                <label> Okul</label>
+                <input required type="text" name="ogr_okul" value="" class="form-control">
+              </div>
+            </div>
+            <div class="form-row">
+    <div class="col-md-12 form-group">
+        <label>Kayıt Tarihi</label>
+        <input required type="date" name="ogr_kayit_tar" value="<?php echo date('Y-m-d'); ?>" class="form-control">
+    </div>
+</div>
+
+<div class="form-row">
+                            <div class="col-md-12 form-group">
+                                <label>Doğum Tarihi</label>
+                                <input required type="date" name="ogr_dogum_tar" value="" class="form-control">
+                            </div>
+            <div class="form-row">
+              <div class="col-md-12 form-group">
+                <label> Ücret</label>
+                <input required type="text" name="ogr_ucret" value="" class="form-control">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="col-md-12 form-group mt-3">
+                
+              </div>
+            </div>
+            <div class="text-center mt-4">
+              <button type="submit" name="add_recipe_btn" class="btn btn-primary col-md-6">Ekle</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<?php include 'footer.php'; ?>
+<script src="ckeditor/ckeditor.js"></script>
+<script>
+  CKEDITOR.replace('editor');
+</script>

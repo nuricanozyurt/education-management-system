@@ -1,0 +1,18 @@
+<table border="1" id="lessonTable">
+        <tbody><tr>
+            <th>Gün</th>
+            <th>Saat</th>
+            <th>Ders</th>
+        </tr>
+        <tr>
+            <td><input type="text" id="day1"></td>
+            <td><input type="text" id="time1"></td>
+            <td><input type="text" id="lesson1"></td>
+        </tr>
+        <tr>
+            <td><input type="text" id="day2"></td>
+            <td><input type="text" id="time2"></td>
+            <td><input type="text" id="lesson2"></td>
+        </tr>
+        <!-- Diğer günler için aynı şekilde devam edebilirsiniz -->
+    </tbody></table>
