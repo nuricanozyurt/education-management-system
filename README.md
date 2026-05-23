@@ -23,9 +23,6 @@ Bu sistem, eğitim kurumlarındaki öğrenci bilgilerinin dijitalleştirilmesi v
 * **Frontend:** HTML5, CSS3, JavaScript, Bootstrap (Duyarlı Tasarım)
 * **Sunucu:** XAMPP / WAMP
 
-## 📸 Ekran Görüntüleri
-*(Buraya Öğrenci Giriş Ekranı ve Not Görüntüleme Panelinin ekran görüntülerini ekle)*
-
 ## 🛠️ Nasıl Çalıştırılır?
 1. Bu projeyi bilgisayarınıza indirin veya klonlayın.
 2. XAMPP/WAMP sunucunuzu başlatın.
